@@ -32,12 +32,6 @@ class AccessNode:  #Implementierungs unterschiede
 
     def handel(self):  #Implementierungs unterschiede
         try:
-            #messageAvailable = self.serial.read(1)
-            #if self.sendQueue.qsize() > 0:
-            #    self.serial.write(b'y')
-            #    self.serial.write(self.sendQueue.get_nowait())
-            #else: self.serial.write(b'n')
-            #if messageAvailable == b'y': self.recvQueue.put_nowait(self.serial.readline().decode()[:-1])
             self.recvQueue.put_nowait(self.serial.readline().decode()[:-1])
         except Exception as e:
             print(e)
