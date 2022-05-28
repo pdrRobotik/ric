@@ -52,7 +52,7 @@ async def writeStream(origin, target, targetgroup, message):
 
 
 async def accessPoint():  #Implementierungs unterschiede
-    await websockets.serve(accessSetup, "127.0.0.1", 5678)
+    await websockets.serve(accessSetup, "0.0.0.0", 5678)
 
 
 async def accessSetup(websocket, path):
@@ -67,7 +67,7 @@ async def accessSetup(websocket, path):
 
 async def main():
     global reader, writer
-    reader, writer = await asyncio.open_unix_connection('../DistributionStream.sock')
+    reader, writer = await asyncio.open_unix_connection('DistributionStream.sock')
     writer.write(group.encode()+b'\n')
     await writer.drain()
     await asyncio.gather(listenStream(), accessPoint())

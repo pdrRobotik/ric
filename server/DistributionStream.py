@@ -26,7 +26,7 @@ async def handle(in_if, out_if):
             origin, message = await read(in_if)
             send(origin, group, message)
             await out_if.drain()
-    except: print("Error", group)
+    except Exception as e: print("Error", group, e)
     finally:
         interfaces.pop(out_if)
         out_if.close()

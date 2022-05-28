@@ -1,6 +1,7 @@
 import asyncio
 import serial
 import serial.tools.list_ports
+from asyncinotify import Inotify, Mask
 
 global reader, writer
 narrowAccessNodes = dict()
@@ -9,6 +10,7 @@ wideAccessNodes = []
 group = 'serial'
 
 BAUDRATE = 9600
+SELECTORS = ['ACM']
 
 class AccessNode:  #Implementierungs unterschiede
 
@@ -25,16 +27,18 @@ class AccessNode:  #Implementierungs unterschiede
         loop.create_task(self.talker())
 
     async def send(self, data):  #Implementierungs unterschiede
-        await self.sendQueue.put(data)
+        self.serial.write(data)
+        #await self.sendQueue.put(data)
 
     def handel(self):  #Implementierungs unterschiede
         try:
-            messageAvailable = self.serial.read(1)
-            if self.sendQueue.qsize() > 0:
-                self.serial.write(b'y')
-                self.serial.write(self.sendQueue.get_nowait())
-            else: self.serial.write(b'n')
-            if messageAvailable == b'y': self.recvQueue.put_nowait(self.serial.readline().decode()[:-1])
+            #messageAvailable = self.serial.read(1)
+            #if self.sendQueue.qsize() > 0:
+            #    self.serial.write(b'y')
+            #    self.serial.write(self.sendQueue.get_nowait())
+            #else: self.serial.write(b'n')
+            #if messageAvailable == b'y': self.recvQueue.put_nowait(self.serial.readline().decode()[:-1])
+            self.recvQueue.put_nowait(self.serial.readline().decode()[:-1])
         except Exception as e:
             print(e)
             try: self.loop.remove_reader(self.serial)
@@ -75,22 +79,44 @@ async def writeStream(origin, target, targetgroup, message):
 
 async def accessPoint():  #Implementierungs unterschiede
     loop = asyncio.get_event_loop()
+
     for i in serial.tools.list_ports.comports():
         print(i)
-        if 'ACM' in i.device: accessSetup(i.device, loop)
+        await tryRegister(i.device, loop)
+        #if 'ACM' in i.device: accessSetup(i.device, loop)
 
+    with Inotify() as inotify:
+        inotify.add_watch('/dev/', Mask.CREATE)
+        async for event in inotify:
+            print("Found new dev:",event.path.as_posix())
+            await asyncio.sleep(0.5)
+            await tryRegister(event.path.as_posix(),loop)
+
+
+async def tryRegister(path,loop):
+    if "tty" in path:
+        for selector in SELECTORS:
+            if selector in path:
+                accessSetup(path,loop)
+
+
+#def doSetup(device):
+#    pass
 
 def accessSetup(dev, loop):
+    print(dev)
     serial_f = serial.Serial(port=dev, baudrate=BAUDRATE)
 
-    serial_f.write(b't')
+    serial_f.read(6)
+    serial_f.write(b'hello\n')
     setup = serial_f.readline().decode()[:-1].split(':')
 
-    print(setup)
     if setup[1] == 'w':
+        print("wideAccessNodes with name:",setup[0])
         wideAccessNodes.append(AccessNode(setup[0], True, serial_f, loop))
         loop.add_reader(serial_f, wideAccessNodes[-1].handel)
     else:
+        print("narrowAccessNodes with name:",setup[0])
         narrowAccessNodes[setup[0]] = AccessNode(setup[0], False, serial_f, loop)
         loop.add_reader(serial_f, narrowAccessNodes[setup[0]].handel)
 
