@@ -1,5 +1,17 @@
+#!/bin/python3
+
 # Importiert das asyncio Modul
 import asyncio
+import sys
+
+if len(sys.argv) < 2:
+	print(sys.argv[0]+" <Path where to put Unix Socked>", file=sys.stderr)
+	exit(1)
+
+PATH = sys.argv[1]
+if PATH[-1] != "/":
+    PATH += "/"
+PATH += "DistributionStream.sock"
 
 # Liste aller eingehängten Interfaces
 interfaces = dict()
@@ -33,7 +45,7 @@ async def handle(in_if, out_if):
 
 
 async def main():
-    server = await asyncio.start_unix_server(handle, 'DistributionStream.sock')
+    server = await asyncio.start_unix_server(handle, PATH)
     addr = server.sockets[0].getsockname()
     print(f'Serving on {addr}')
     async with server:

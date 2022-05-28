@@ -1,5 +1,17 @@
+#!/bin/python3
+
 import asyncio
 import websockets
+import sys
+
+if len(sys.argv) < 2:
+        print(sys.argv[0]+" <Path where to put Unix Socked>", file=sys.stderr)
+        exit(1)
+
+PATH = sys.argv[1]
+if PATH[-1] != "/": 
+    PATH += "/"
+PATH += "DistributionStream.sock"
 
 global reader, writer
 narrowAccessNodes = dict()
@@ -67,7 +79,7 @@ async def accessSetup(websocket, path):
 
 async def main():
     global reader, writer
-    reader, writer = await asyncio.open_unix_connection('DistributionStream.sock')
+    reader, writer = await asyncio.open_unix_connection(PATH)
     writer.write(group.encode()+b'\n')
     await writer.drain()
     await asyncio.gather(listenStream(), accessPoint())
