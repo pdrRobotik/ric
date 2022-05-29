@@ -62,35 +62,50 @@ void loop() {
 }
 ```
 
-## Referenz
+# Referenz
 
-### **RobotikInterConnect**  \
-  \
+## **RobotikInterConnect**
 Initialisiert die Kommunikation zum SerialInterface.\
-**Parameter**\
-`name` - der Node Name mit dem sich beim SerialInterface registriert wird.\
+**Parameter**
+* `name` - der Node Name mit dem sich beim SerialInterface registriert wird.
 ```cpp
 RobotikInterConnect(String name)
-```  
+```
   
-### **send**  
+
+## **send**
 Schickt eine Nachricht an ein Empfänger.\
-**Parameter**\
-`target` - Die Ziel-Node an die, die Nachricht geschickt werden soll.\
-`targetgroup` - Die Gruppe in der die Zeil-Node ist.\
-`msg` - Die Nachricht die an die Ziel-Node geschickt werden soll.\
+**Parameter**
+* `target` - Die Ziel-Node an die, die Nachricht geschickt werden soll.\
+* `targetgroup` - Die Gruppe in der die Zeil-Node ist.\
+* `msg` - Die Nachricht die an die Ziel-Node geschickt werden soll.
 ```cpp
 void send(String target,String targetgroup,String msg)
 ```
 
+## **read_wait**
+Empfängt eine Nachricht. Wartet bis es eine Nachricht gibt.\
+**Rückgabe**
+* Gibt einen `String` mit der gelesen Nachricht zurück.
 ```cpp
 String read_wait()
 ```
 
+## **read**
+Empfängt eine Nachricht ohne zu warten.\ 
+Wenn keine Nachricht bereit steht, wird "" zurück gegeben.\
+**Rückgabe**
+* Gibt einen `String` mit der gelesen Nachricht zurück.\
+  Ein leeren String wenn es keine Nachricht gab.
 ```cpp
 String read()
 ```
 
+
+## **hasData**
+Überprüft ob es eine Nachricht zum lesen gibt.\
+**Rückgabe**
+* `true`, wenn es mindestens eine Nachricht zum lesen gibt, sonst `false`.
 ```cpp
 bool hasData()
 ```

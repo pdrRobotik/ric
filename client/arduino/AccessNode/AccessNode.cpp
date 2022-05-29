@@ -36,7 +36,7 @@ String RobotikInterConnect::read_wait() {
 }
 
 /**
- * @brief Empfängt eine Nachricht ohne zu wärten. -> wenn keine Nachricht bereit steht, wird "" gegeben.
+ * @brief Empfängt eine Nachricht ohne zu warten. -> wenn keine Nachricht bereit steht, wird "" gegeben.
  * 
  * @return String mit der gelesen Nachricht. Leer wenn es keine Nachricht gab.
  */
