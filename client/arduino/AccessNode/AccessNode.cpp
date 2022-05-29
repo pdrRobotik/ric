@@ -1,6 +1,11 @@
 #include "Arduino.h"
 #include "AccessNode.h"
 
+/**
+ * @brief Initialisiert die Kommunikation zum SerialInterface.
+ * 
+ * @param name der Node Name mit dem sich beim SerialInterface registriert wird.
+ */
 RobotikInterConnect::RobotikInterConnect(String name) {
   Serial.setTimeout(1000); //Set Timeout to 1 Seconds
 
@@ -17,6 +22,11 @@ RobotikInterConnect::RobotikInterConnect(String name) {
   Serial.print(":n\n");//NARROW ACCESSNODE
 }
 
+/**
+ * @brief Empfängt eine Nachricht. Wartet bis es eine Nachricht gibt.
+ * 
+ * @return String mit der gelesen Nachricht.
+ */
 String RobotikInterConnect::read_wait() {
   Serial.print(">@"); //Request Message with Wait
 
@@ -25,12 +35,22 @@ String RobotikInterConnect::read_wait() {
   return Serial.readStringUntil('\n');
 }
 
+/**
+ * @brief Empfängt eine Nachricht ohne zu wärten. -> wenn keine Nachricht bereit steht, wird "" gegeben.
+ * 
+ * @return String mit der gelesen Nachricht. Leer wenn es keine Nachricht gab.
+ */
 String RobotikInterConnect::read() { //Empty String if no message is waiting
   Serial.print(":@"); //Request Message
 
   return Serial.readStringUntil('\n');
 }
 
+/**
+ * @brief Überprüft ob es eine Nachricht zum lesen gibt.
+ * 
+ * @return true, wenn es mindestens eine Nachricht zum lesen gibt, sonst false.
+ */
 bool RobotikInterConnect::hasData() {
   Serial.print("@@");
   bool result = Serial.parseInt() > 0;
@@ -38,6 +58,13 @@ bool RobotikInterConnect::hasData() {
   return result;
 }
 
+/**
+ * @brief Schickt eine Nachricht an ein Empfänger.
+ * 
+ * @param target Die Ziel-Node an die, die Nachricht geschickt werden soll.
+ * @param targetgroup Die Gruppe in der die Zeil-Node ist.
+ * @param msg Die Nachricht die an die Ziel-Node geschickt werden soll.
+ */
 void RobotikInterConnect::send(String target,String targetgroup,String msg) {
   Serial.print("@:"); //Send Message
 
