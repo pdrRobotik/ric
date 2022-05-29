@@ -4,7 +4,8 @@ import asyncio
 import serial
 import serial.tools.list_ports
 from asyncinotify import Inotify, Mask
-import sys
+import sys, traceback
+#from concurrent.futures import ProcessPoolExecutor
 
 if len(sys.argv) < 2:
         print(sys.argv[0]+" <Path where to put Unix Socked>", file=sys.stderr)
@@ -21,7 +22,7 @@ wideAccessNodes = []
 
 group = 'serial'
 
-BAUDRATE = 9600
+BAUDRATE = 57600#115200 #9600
 SELECTORS = ['ACM']
 
 class AccessNode:  #Implementierungs unterschiede
@@ -33,20 +34,42 @@ class AccessNode:  #Implementierungs unterschiede
         self.loop = loop
         self.sendQueue = asyncio.Queue()
         self.recvQueue = asyncio.Queue()
+        self.isWaitingLock = asyncio.Lock()
         self.device = self.serial.fileno()
         self.open = True
+
+        self.isWaiting = False
 
         loop.create_task(self.talker())
 
     async def send(self, data):  #Implementierungs unterschiede
-        self.serial.write(data)
-        #await self.sendQueue.put(data)
+        if self.isWaiting:
+            self.isWaiting = False
+            self.serial.write(data)
+        else:
+            await self.sendQueue.put(data)
 
     def handel(self):  #Implementierungs unterschiede
         try:
-            self.recvQueue.put_nowait(self.serial.readline().decode()[:-1])
+            communicationInit = self.serial.read(2)
+
+            if communicationInit == b'@:': #Recieve Message
+                self.recvQueue.put_nowait((self.serial.readline()).decode()[:-1])
+            elif communicationInit == b':@': #Get Messege if availbe
+                if self.sendQueue.qsize() > 0:
+                    self.serial.write(self.sendQueue.get_nowait())
+                else:
+                    self.serial.write(b'\n')
+            elif communicationInit == b'>@':
+                if self.sendQueue.qsize() > 0:
+                    self.serial.write(self.sendQueue.get_nowait())
+                else:
+                    self.isWaiting = True
+            elif communicationInit == b'@@': #Get Queue Length
+                self.serial.write((str(self.sendQueue.qsize())+"\n").encode())
+            
         except Exception as e:
-            print(e)
+            print("Exception: ",e)
             try: self.loop.remove_reader(self.serial)
             except: pass
             try: self.serial.close()
@@ -70,10 +93,13 @@ async def listenStream():
     try:
         while not reader.at_eof():
             origin, target, targetgroup, message = await readStream()
-            if targetgroup == group and target in narrowAccessNodes: await narrowAccessNodes[target].send(f'{message}\n'.encode())
+            if targetgroup == group and target in narrowAccessNodes: 
+                await narrowAccessNodes[target].send(f'{message}\n'.encode())
             data = f"{origin}>{target}@{targetgroup}:{message}\n".encode()
             for accessNode in wideAccessNodes: await accessNode.send(data)
-    except: pass
+    except Exception as e: 
+        print("Exception in listenStream:",e)
+        traceback.print_tb(e.__traceback__)
     finally:
         pass
 

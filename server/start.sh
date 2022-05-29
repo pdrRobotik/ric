@@ -1,6 +1,10 @@
 #!/bin/bash
 
-screen -S DistributionStream -d -m python3 DistributionStream.py $(pwd)
+./stop.sh
+
+sleep 1
+
+screen -S DistributionStream -d -m python3 -u DistributionStream.py $(pwd)
 
 sleep 1
 

@@ -1,10 +1,10 @@
 #include "Arduino.h"
 #include "AccessNode.h"
 
-RobotikInterConnectNA::RobotikInterConnectNA(String name) {
+RobotikInterConnect::RobotikInterConnect(String name) {
   Serial.setTimeout(1000); //Set Timeout to 1 Seconds
 
-  Serial.begin(9600);
+  Serial.begin(57600); //9600 - Safe Speed //115200 - Almost Fastest
 
   bool hello_not_Ok = true;
   while (hello_not_Ok) {
@@ -17,21 +17,30 @@ RobotikInterConnectNA::RobotikInterConnectNA(String name) {
   Serial.print(":n\n");//NARROW ACCESSNODE
 }
 
-String RobotikInterConnectNA::read_wait() {
-  while (Serial.available() == 0) delay(1); //Wait Until Data is avaliable
+String RobotikInterConnect::read_wait() {
+  Serial.print(">@"); //Request Message with Wait
+
+  while (Serial.available() == 0) delay(2);
 
   return Serial.readStringUntil('\n');
 }
 
-String RobotikInterConnectNA::read() {
+String RobotikInterConnect::read() { //Empty String if no message is waiting
+  Serial.print(":@"); //Request Message
+
   return Serial.readStringUntil('\n');
 }
 
-bool RobotikInterConnectNA::hasData() {
-  return Serial.available() > 0;
+bool RobotikInterConnect::hasData() {
+  Serial.print("@@");
+  bool result = Serial.parseInt() > 0;
+  Serial.readStringUntil('\n');
+  return result;
 }
 
-void RobotikInterConnectNA::send(String target,String targetgroup,String msg) {
+void RobotikInterConnect::send(String target,String targetgroup,String msg) {
+  Serial.print("@:"); //Send Message
+
   Serial.print(target);
   Serial.print("@");
   Serial.print(targetgroup);

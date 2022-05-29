@@ -3,9 +3,9 @@
 
 #include "Arduino.h"
 
-class RobotikInterConnectNA {
+class RobotikInterConnect {
   public:
-    RobotikInterConnectNA(String name);
+    RobotikInterConnect(String name);
     void send(String target,String targetgroup,String msg);
 
     String read_wait();
