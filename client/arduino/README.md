@@ -58,7 +58,7 @@ void loop() {
         ric->send("test","testGruppe",ric->read());
     }
 
-    delay(1);
+    delay(10);
 }
 ```
 
