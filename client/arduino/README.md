@@ -4,8 +4,8 @@
 ## Verwendung
 Mit der Bibliothek kann *ein* Verbindung zu dem Serial Interface vom **Robotik InterConnect / MDSN** aufgebaut werden. Und Nachricht ausgetauscht werden.\
   \
-Das erste Beispiel initialisiert die Verbindung zum SerialInterface mit dem Namen **"ExampleName"**.\
-Und verschickt die Nachricht **"Hallo Welt!"** and die Ziel Node **"test"** in der Ziel Gruppe **"testGruppe"**.
+Das erste Beispiel initialisiert die Verbindung zum SerialInterface mit dem Namen **"ExampleName"**\
+und verschickt die Nachricht **"Hallo Welt!"** an die Ziel-Node **"test"** in der Ziel-Gruppe **"testGruppe"** alle 0,1 Sekunden.
 ```cpp
 #include <AccessNode.h>
 
@@ -17,5 +17,7 @@ void setup() {
 
 void loop() {
     ric->send("test","testGruppe","Hallo Welt!"); 
+
+    delay(100);
 }
 ```
