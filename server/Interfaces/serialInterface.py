@@ -136,22 +136,24 @@ async def tryRegister(path,loop):
 #    pass
 
 def accessSetup(dev, loop):
-    print(dev)
-    serial_f = serial.Serial(port=dev, baudrate=BAUDRATE)
+    try:
+        print(dev)
+        serial_f = serial.Serial(port=dev, baudrate=BAUDRATE)
 
-    serial_f.read(6)
-    serial_f.write(b'hello\n')
-    setup = serial_f.readline().decode()[:-1].split(':')
+        serial_f.read(6)
+        serial_f.write(b'hello\n')
+        setup = serial_f.readline().decode()[:-1].split(':')
 
-    if setup[1] == 'w':
-        print("wideAccessNodes with name:",setup[0])
-        wideAccessNodes.append(AccessNode(setup[0], True, serial_f, loop))
-        loop.add_reader(serial_f, wideAccessNodes[-1].handel)
-    else:
-        print("narrowAccessNodes with name:",setup[0])
-        narrowAccessNodes[setup[0]] = AccessNode(setup[0], False, serial_f, loop)
-        loop.add_reader(serial_f, narrowAccessNodes[setup[0]].handel)
-
+        if setup[1] == 'w':
+            print("wideAccessNodes with name:",setup[0])
+            wideAccessNodes.append(AccessNode(setup[0], True, serial_f, loop))
+            loop.add_reader(serial_f, wideAccessNodes[-1].handel)
+        else:
+            print("narrowAccessNodes with name:",setup[0])
+            narrowAccessNodes[setup[0]] = AccessNode(setup[0], False, serial_f, loop)
+            loop.add_reader(serial_f, narrowAccessNodes[setup[0]].handel)
+    except Exception as e:
+        print("Error in setup:",e)
 
 
 async def main():
